@@ -5,18 +5,8 @@ from flask_restful import Resource, Api
 app = Flask(__name__)
 api = Api(app)
 
-class BaseApiView(Resource):
-    """ All the implies on all views 
-    will be implemented here
-    """
-    def post(self):
 
-        content_type = request.headers.get('Content-type', '')
-        if not content_type.lower() == 'application/json':
-            return {'error': 'Content_type must be json'}, 412
-
-
-class HealthCheckView(BaseApiView):
+class HealthCheckView(Resource):
     """ Used for hc on the api or another 
     service, i.e. databse access
     """
@@ -27,7 +17,7 @@ class HealthCheckView(BaseApiView):
 # Simulates an database
 DATA_KEY = {}
 
-class KeyControlView(BaseApiView):
+class KeyControlView(Resource):
     """ Class to manage the keys
     """
     def __init__(self):
