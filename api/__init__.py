@@ -1,6 +1,7 @@
 
 from flask import Flask, request
 from flask_restful import Resource, Api
+import redis
 
 app = Flask(__name__)
 api = Api(app)
@@ -14,25 +15,23 @@ class HealthCheckView(Resource):
         return {'status': 'OK'}
 
 
-# Simulates an database
-DATA_KEY = {}
-
 class KeyControlView(Resource):
     """ Class to manage the keys
     """
     def __init__(self):
-        self.data_key = DATA_KEY
+        self.data_key = redis.Redis(host='localhost', port=6379, db=0)
+
 
     def get(self, key_id=None):
         """ Return one or all keys
         """
         if not self.data_key:
-            return {'error': 'none_key_saved'}
+            return {'error': 'redis_error'}
 
         if key_id and self.data_key.get(key_id):
-            return {key_id: self.data_key[key_id]}
+            return {key_id: self.data_key.get(key_id).decode()}
 
-        return self.data_key
+        return {'warning': 'key_id not found'}
 
     def post(self):
         """ Save the key
@@ -40,7 +39,7 @@ class KeyControlView(Resource):
         payload = request.json
 
         for key_id, key in payload.items():
-            self.data_key[key_id] = key
+            self.data_key.set(key_id, key)
 
         return {'success': True, 'message': 'key_saved'}
 
